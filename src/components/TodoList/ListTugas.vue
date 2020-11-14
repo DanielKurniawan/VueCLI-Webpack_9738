@@ -20,8 +20,7 @@
                     Tambah
                 </v-btn>
             </v-card-title>
-
-            <v-data-table :headers="headers" :items="todos" :search="search">
+            <v-data-table :headers="headers" :items="todos" :search="search">                
                 <template v-slot:[`item.actions`]="{ item }">
                     <v-icon small class="mr-2" @click="dialog=true, editItem(item)" color="blue">
                         mdi-pencil
@@ -48,9 +47,31 @@
                         </v-chip>
                     </span>    
                 </template>
+                <template v-slot:[`item.checkbox`]="{ item }">
+                    <v-checkbox v-model="selected" :value="item">
+
+                    </v-checkbox>
+                </template>
             </v-data-table>
         </v-card>
+        
+        <v-card class="mt-2" v-show="selected.length != 0">
+            <v-card-title>
+                <p>Delete Multiple</p>
+            </v-card-title>
 
+            <v-card-text>
+                <ul v-for="(item,index) in selected" :key="index" class="text-left ml-3">
+                    <li color="black">{{item.task}}</li>
+                </ul>
+                <br>
+                <v-col class="text-left">
+                    <v-btn @click="deleteAll" color="red" dark>
+                        hapus semua
+                    </v-btn>
+                </v-col>
+            </v-card-text>
+        </v-card>
 
 
 
@@ -149,7 +170,6 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
     </v-main>
 </template>
 <script>
@@ -163,6 +183,7 @@ export default {
             dialogSelesai: false,
             index: null,
             editOrcreate:0,
+            selected: [],
             headers: [
                 {
                     text: "Task",
@@ -173,7 +194,7 @@ export default {
                 { text: "Priority", value: "priority" },
                 { text: "Note", value: "note" },
                 { text: "Actions", value: "actions" },
-                { text: "", value: "" },
+                { text: "", value: "checkbox" },
             ],
             headersSelesai: [
                 {
@@ -266,6 +287,24 @@ export default {
             this.todos.splice(this.index, 1);
             this.dialogDelete = false;
             this.resetForm();
+        },
+        deleteAll() {
+            // pindah dulu satu2
+            for(var i=0;i<this.selected.length;i++) {
+                this.formTodo.task = this.selected[i].task;
+                this.formTodo.priority = this.selected[i].priority;
+                this.formTodo.note = this.selected[i].note;
+
+                this.finishedTodos.push(this.formTodo);
+                this.resetForm();
+
+                this.index = this.todos.indexOf(this.selected[i]);       
+
+                this.todos.splice(this.index, 1);
+            }
+
+            // langsung clean array nya
+            this.selected = [];
         }
     },
 };
